@@ -1,0 +1,26 @@
+---
+abstract: 'Interface to anonymous LWP::UserAgent.'
+author:
+  - 'Mohammad S Anwar <mohammad.anwar@yahoo.com>'
+build_requires:
+  Clone: 0
+  LWP::UserAgent: 0
+  List::Util: 0
+  Module::Build: 0.36
+  Net::Telnet: 2.36
+  Test::More: 0
+configure_requires:
+  Module::Build: 0.36
+generated_by: 'Module::Build version 0.3607'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: LWP-UserAgent-Anonymous
+provides:
+  LWP::UserAgent::Anonymous:
+    file: lib/LWP/UserAgent/Anonymous.pm
+    version: 0.01
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

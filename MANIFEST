@@ -1,0 +1,16 @@
+Changes
+MANIFEST
+MANIFEST.SKIP
+SIGNATURE
+Build.PL
+Makefile.PL
+README
+lib/LWP/UserAgent/Anonymous.pm
+lib/LWP/UserAgent/Anonymous/Proxy.pm
+t/00-load.t
+t/unit-test.t
+t/manifest.t
+t/pod-coverage.t
+t/pod.t
+META.yml
+SIGNATURE    Added here by Module::Build
