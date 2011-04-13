@@ -20,7 +20,7 @@ name: LWP-UserAgent-Anonymous
 provides:
   LWP::UserAgent::Anonymous:
     file: lib/LWP/UserAgent/Anonymous.pm
-    version: 0.01
+    version: 0.02
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02
