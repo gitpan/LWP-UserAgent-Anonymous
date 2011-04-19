@@ -16,25 +16,23 @@ LWP::UserAgent::Anonymous - Interface to anonymous LWP::UserAgent.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
-=head1 SYNOPSIS
+=head1 DESCRIPTION
 
-It provides an anonymity to a user agent by  setting the proxy  from  the pool of
-2329 proxies. It tries to get a valid proxy from  the default  pool,  however, if
-it can't get hold of any valid after trying $DEFAULT_RETRY_COUNT times, it  falls
-back to non-proxy mode. I have come across quite a few modules available on  CPAN
-that claims to be a frontrunner in this area but unfortunately  they all rely  on
-external website that keeps changing with the time and breaking the module in the
-end. I tried not to rely on the external website for proxy server but capture all
-the information and keep it locally. Also we have safety net as well just in case
-nothing works. I promise
-NOTE: There is no gurantee that you would get anonymous proxy. However there is a
-very good probability of getting one.
+It provides an anonymity to a user agent by  setting the proxy from the pool of 2329  proxies.
+It tries to get a valid proxy from the default pool, however,if it can't get hold of any valid
+after  trying  $DEFAULT_RETRY_COUNT times, it falls back to non-proxy mode. I have come across
+quite  a  few  modules  available  on  CPAN  that  claims to be a frontrunner in this area but
+unfortunately they all rely on external website that keeps changing with the time and breaking
+the module in the end.I tried not to rely on the external website for proxy server but capture
+all the information and keep it locally. Also we have safety net as  well just in case nothing
+works.  I promise NOTE: There is no gurantee that you would get anonymous proxy. However there 
+is a very good probability of getting one.
 
     use strict; use warnings; 
     use LWP::UserAgent::Anonymous;
@@ -51,10 +49,10 @@ our $DEFAULT_RETRY_COUNT = 3;
 
 =head2 anon_request()
 
-This is simply acts like proxy handler for user agent. It tries to get hold of  a valid
-proxy server, if it can't then it simply takes the standard route. This method  behaves
-exactly as method request() for LWP::UserAgent plus sets the proxy for you. You can get
-the internal details by switching the debug $LWP::UserAgent::Anonymous::DEBUG.
+This  is simply acts like proxy handler for user agent. It tries to get hold of  a valid proxy
+server,  if  it can't then it simply takes the standard route. This method  behaves exactly as 
+method  request()  for LWP::UserAgent  plus  sets  the proxy for you. You can get the internal 
+details by switching the debug $LWP::UserAgent::Anonymous::DEBUG.
 
     use strict; use warnings;
     use LWP::UserAgent::Anonymous;
@@ -113,9 +111,9 @@ sub get_proxy
 
 =head2 is_it_ok()
 
-This takes in a proxy and validates it by telneting  it. Returns 1 on success  and
-0 on failure. This is being called by method set_proxy(). Expects the proxy in the
-format of ddd.ddd.ddd.ddd:ddddd.
+This takes in a proxy and validates it by telneting it. Returns 1 on success and 0 on failure.
+This is being called by method set_proxy(). 
+Expects the proxy in the format of ddd.ddd.ddd.ddd:ddddd.
 
     use strict; use warnings;
     use LWP::UserAgent::Anonymous;
@@ -194,9 +192,9 @@ sub set_retry
 
 =head2 set_proxy()
 
-This loads up the default list of proxies and shuffles it before picking up one
-from the list. This is being called by method anon_request(). This *SHOULD* not
-be called directly, instead let method anon_request() handle the call for you.
+This loads up the default list of proxies and shuffles it before picking up one from the list.
+This  is  being called by method anon_request(). This *SHOULD* not be called directly, instead 
+let method anon_request() handle the call for you.
 
     use strict; use warnings;
     use LWP::UserAgent::Anonymous;
@@ -232,9 +230,10 @@ Mohammad S Anwar, C<< <mohammad.anwar at yahoo.com> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-lwp-useragent-anonymous at rt.cpan.org>,
-or through the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LWP-UserAgent-Anonymous>.
-I will be notified, and then you'll automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests to C<bug-lwp-useragent-anonymous at rt.cpan.org>,or
+ through the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LWP-UserAgent-Anonymous>.
+I will be notified and then you'll automatically be notified of progress on your bug as I make 
+changes.
 
 =head1 SUPPORT
 
@@ -268,15 +267,16 @@ L<http://search.cpan.org/dist/LWP-UserAgent-Anonymous/>
 
 Copyright 2011 Mohammad S Anwar.
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of either: the GNU General Public License as published by the Free
-Software Foundation; or the Artistic License.
+This  program  is  free  software; you can redistribute it and/or modify it under the terms of
+either:  the  GNU  General Public License as published by the Free Software Foundation; or the 
+Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
 
 =head1 DISCLAIMER
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This  program  is  distributed  in  the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 =cut
 

@@ -12,7 +12,7 @@ $response = $browser->get('http://www.google.com/');
 plan skip_all => "It appears you don't have internet access."
     unless ($response->is_success);
 
-$browser  = LWP::UserAgent::Anonymous->new();    
+$browser  = LWP::UserAgent::Anonymous->new();
 $browser->set_retry(1);
 $request  = HTTP::Request->new(GET=>'http://www.google.com/');
 $response = $browser->anon_request($request);

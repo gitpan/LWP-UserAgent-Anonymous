@@ -1,5 +1,9 @@
 Revision history for LWP-UserAgent-Anonymous
 
+0.03    Tue Apr 19 13:29:13 2011
+        - Renamed title "SYNOPSIS" to "DESCRIPTION".
+        - Minor cosmetics changes.
+
 0.02    Wed Apr 13 16:37:20 2011
         - Changed the URL in the unit test.
 
