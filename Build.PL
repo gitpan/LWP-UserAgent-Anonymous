@@ -10,11 +10,11 @@ my $builder = Module::Build->new(
     add_to_cleanup     => [ 'LWP-UserAgent-Anonymous-*' ],
     build_requires     => {
         'Test::More'     => 0,
-        'Module::Build'  => 0.36,
-        'LWP::UserAgent' => 0,
-        'List::Util'     => 0,
-        'Clone'          => 0,
-        'Net::Telnet'    => 2.36,
+        'Module::Build'  => '0.36',
+        'LWP::UserAgent' => '2.33',
+        'List::Util'     => '1.18',
+        'Clone'          => '0.31',
+        'Net::Telnet'    => '2.36',
     }
 );
 

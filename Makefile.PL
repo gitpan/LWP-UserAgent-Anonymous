@@ -7,11 +7,11 @@ WriteMakefile
     'INSTALLDIRS'  => 'site',
     'clean'        => { FILES => 'LWP-UserAgent-Anonymous-*' },
     'PREREQ_PM'    => {
-        'Clone'          => '0',
-        'LWP::UserAgent' => '0',
-        'List::Util'     => '0',
+        'Test::More'     => 0,
         'Module::Build'  => '0.36',
+        'LWP::UserAgent' => '2.33',
+        'List::Util'     => '1.18',
+        'Clone'          => '0.31',
         'Net::Telnet'    => '2.36',
-        'Test::More'     => '0'
     }
 );
