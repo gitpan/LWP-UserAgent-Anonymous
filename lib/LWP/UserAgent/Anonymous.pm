@@ -1,6 +1,6 @@
 package LWP::UserAgent::Anonymous;
 
-$LWP::UserAgent::Anonymous::VERSION = '0.05';
+$LWP::UserAgent::Anonymous::VERSION = '0.06';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ LWP::UserAgent::Anonymous - Interface to anonymous LWP::UserAgent.
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 
@@ -16,6 +16,7 @@ use warnings; use strict;
 
 use 5.006;
 use Clone;
+use LWP::Simple;
 use Data::Dumper;
 use List::Util qw/shuffle/;
 use base qw/LWP::UserAgent Clone/;
@@ -47,6 +48,7 @@ method  behaves exactly as method  request()  for LWP::UserAgent  plus  sets  th
 proxy for you.
 
     use strict; use warnings;
+    use HTTP::Request;
     use LWP::UserAgent::Anonymous;
 
     my $browser  = LWP::UserAgent::Anonymous->new();
@@ -56,7 +58,7 @@ proxy for you.
 =cut
 
 sub anon_request {
-    my ($self) = @_;
+    my $self = shift;
 
     my $clone   = $self->clone();
     my $retry   = $DEFAULT_RETRY_COUNT;
@@ -67,7 +69,7 @@ sub anon_request {
         while ($retry > 0 && scalar(@proxies) > 0) {
             my $proxy = shift @proxies;
             if (defined($proxy) && ($proxy =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,6}/)) {
-                $self->proxy(['http','ftp'], $proxy);
+                $self->proxy(['http','ftp'], sprintf("http://%s/", $proxy));
                 my $response = $self->SUPER::request(@_);
                 print {*STDOUT} "INFO: Status " . $response->status_line . "\n" if $DEBUG;
                 return $response if (defined($response) && $response->is_success);
@@ -104,7 +106,7 @@ sub set_debug {
     $DEBUG = $value;
 }
 
-sub _fetch_proxy {
+sub _fetch_proxies {
     my $proxy = [];
     my $file  = get($PROXY_SERVER);
     for my $record (split /\n/,$file) {

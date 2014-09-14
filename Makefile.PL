@@ -18,9 +18,10 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        'Clone'          => '0',
-        'LWP::UserAgent' => '0',
-        'List::Util'     => '0',
+        'Clone'          => 0,
+        'LWP::Simple'    => 0,
+        'LWP::UserAgent' => 0,
+        'List::Util'     => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'LWP-UserAgent-Anonymous-*' },

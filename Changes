@@ -1,5 +1,11 @@
 Revision history for LWP-UserAgent-Anonymous
 
+0.06  Sun Sep 14 20:43:00 2014
+      - Updated invalid method call to _fetch_proxies().
+      - Added missing import of LWP::Simple package.
+      - Added LWP::Simple to Makefile.PL file.
+      - Updated method anon_request() to accept request object correctly.
+
 0.05  Sun Sep 14 12:23:09 2014
       - Removed the dependency on the fixed list of proxies instead now fetch the proxy runtime.
       - Deleted Build.PL file.
