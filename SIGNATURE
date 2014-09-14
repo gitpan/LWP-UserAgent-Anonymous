@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.68.
+signed via the Module::Signature module, version 0.73.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,28 +14,23 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 ca59ace930b5b6a0aaa7269afe0c63582fbf8767 Build.PL
-SHA1 11ff38d66d9960d28ed13f4f6c4443815fa5cfb3 Changes
-SHA1 29c2789604793a8dcd989128d60a935de75010d7 MANIFEST
-SHA1 7d20e4e840781030202bb045d5ab81b3fd1b68b0 MANIFEST.SKIP
-SHA1 746c64a34ec085f95c1df64dbc682814d568e7ad META.yml
-SHA1 08230d70e9518600a1fcf27350c909a4d865540f Makefile.PL
-SHA1 a6374f6544e2fffc0b97d8387526afb95b0a0ac6 README
-SHA1 73d0cfc3829bb9e24db44df4c299374b63c94a69 lib/LWP/UserAgent/Anonymous.pm
-SHA1 3a7e07e2ab00bec8674ac97864791ee455ecde30 lib/LWP/UserAgent/Anonymous/Proxy.pm
+SHA1 c42aa4a0b6c08de42065b4ba01e755096a497056 Changes
+SHA1 0f083a3b5222e999d1b9fecc960bb669ceef3733 MANIFEST
+SHA1 5f29cdcbfacb9c46ac155fff9844aceeb064aef1 MANIFEST.SKIP
+SHA1 6fc27a282207eef45dbe74a449bce81f862bc43a Makefile.PL
+SHA1 e392f1d5ad36ad44dd0aa9ab465fcb83d64e1e5e README
+SHA1 d283de35217f77718d02534f89e9575a4722a00b lib/LWP/UserAgent/Anonymous.pm
 SHA1 056d4846fc9c2cb6da2e6547e86771b819a2de10 t/00-load.t
 SHA1 2b8ffb7e4f399af95d092743846ac8d438f2c53e t/manifest.t
-SHA1 b4cdfae3f4f09a36ad0be86061f6492a32535a0f t/pod-coverage.t
 SHA1 0765c9ff0cc4319f415bb08d0053b7717a8284a2 t/pod.t
-SHA1 6c9cb78f8b5a668e8826adf0a9d1e374948f6858 t/unit-test.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.14 (MingW32)
+Version: GnuPG v1
 
-iQEcBAEBAgAGBQJOQSPeAAoJEPYcXBXhRYOhmj0H/2clMNkAtbRImKBqFnJTH4+a
-Egs4gEeGfFhlaAODTFW/obZPFlOU6UkSoy6WUJ/Hm+qP/26p87TJVzqgwsLAia8b
-C5f25oDUeCLJM+8Aqs1zKazTjZ760V3TEp3bITvx3vO7pXCNy/7x5vAJGxy3ZjmB
-bCfCg1hVG55oV/cPGCfFaQT2Mu8nDCzbPGMwvN2xasadmRZ+o5gQiEFlSCeuax9K
-ox1iZpqcRmdbXHUcZheZTQehlPOCnpOYqVg0xZGhfttStv9PY1VwezWnmwGbCBWH
-yW6sdrLfwxVhiIr/EwS9hhvtFAWf42/7pYm9qs+xAsAyvUQ1g0Zz9ryfeMinaaw=
-=WgWU
+iQEcBAEBAgAGBQJUFX4KAAoJENoXJXWo7C/pmD0H/30blEjOtmbdlsqIHTK7eG4U
+h6xFkcp/5mRqSVj1lKmMGfRWj1ZCilhseVFp5n/7IHYqJhmU4KzCMHjE2ovjCyY8
+JU8gkhuPknw8iYqSqAXkz2X2yDO97VgSFaeY+ojbn8x3xRuaefPBCH3/ogAapTve
+7kf1LQ7SXlMqxD86lvIsKCTA2n2E3ilFDhiyUuAc+7HE89HivNrrhQ4p7NiCAr15
+E/XXg75MbbawBN+7WOXQ/4Zj1OHac7XwGYabYRxVAbkKniu1baa7Eo6Z0okVFe+6
+G3qIG80NSMu++NUYnSC3oKHc+htgcYptyt4nYRZB9vbBIhtSGM9s2P19ScGCuPU=
+=ZLvy
 -----END PGP SIGNATURE-----

@@ -1,14 +1,6 @@
 package LWP::UserAgent::Anonymous;
 
-use warnings; use strict;
-
-use Carp;
-use Clone;
-use Net::Telnet;
-use Data::Dumper;
-use List::Util qw/shuffle/;
-use base qw/LWP::UserAgent Clone/;
-use LWP::UserAgent::Anonymous::Proxy;
+$LWP::UserAgent::Anonymous::VERSION = '0.05';
 
 =head1 NAME
 
@@ -16,25 +8,24 @@ LWP::UserAgent::Anonymous - Interface to anonymous LWP::UserAgent.
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
-our $VERSION = '0.04';
+use warnings; use strict;
+
+use 5.006;
+use Clone;
+use Data::Dumper;
+use List::Util qw/shuffle/;
+use base qw/LWP::UserAgent Clone/;
 
 =head1 DESCRIPTION
 
-It provides an anonymity to a user agent by  setting the proxy from the pool of 2329  proxies.
-It tries to get a valid proxy from the default pool, however,if it can't get hold of any valid
-after  trying  $DEFAULT_RETRY_COUNT times, it falls back to non-proxy mode. I have come across
-quite  a  few  modules  available  on  CPAN  that  claims to be a frontrunner in this area but
-unfortunately they all rely on external website that keeps changing with the time and breaking
-the module in the end.I tried not to rely on the external website for proxy server but capture
-all the information and keep it locally. Also we have safety net as  well just in case nothing
-works.  I promise NOTE: There is no gurantee that you would get anonymous proxy. However there 
-is a very good probability of getting one.
+It provides an anonymity to user agent by setting proxy from the pool  of proxies
+fetched from L<here|http://www.gatherproxy.com> runtime.
 
-    use strict; use warnings; 
+    use strict; use warnings;
     use LWP::UserAgent::Anonymous;
 
     my $browser = LWP::UserAgent::Anonymous->new();
@@ -44,15 +35,16 @@ is a very good probability of getting one.
 $| = 1;
 our $DEBUG = 0;
 our $DEFAULT_RETRY_COUNT = 3;
+our $PROXY_SERVER = 'http://www.gatherproxy.com';
 
 =head1 METHODS
 
 =head2 anon_request()
 
-This  is simply acts like proxy handler for user agent. It tries to get hold of  a valid proxy
-server,  if  it can't then it simply takes the standard route. This method  behaves exactly as 
-method  request()  for LWP::UserAgent  plus  sets  the proxy for you. You can get the internal 
-details by switching the debug $LWP::UserAgent::Anonymous::DEBUG.
+This is simply acts like proxy handler for user agent. It tries to get  hold of a
+valid  proxy  server,  if  it can't then it simply takes the standard route. This
+method  behaves exactly as method  request()  for LWP::UserAgent  plus  sets  the
+proxy for you.
 
     use strict; use warnings;
     use LWP::UserAgent::Anonymous;
@@ -63,113 +55,29 @@ details by switching the debug $LWP::UserAgent::Anonymous::DEBUG.
 
 =cut
 
-sub anon_request
-{
-    my $self  = shift;
-    my $clone = $self->clone();
-    my $retry = $DEFAULT_RETRY_COUNT;
+sub anon_request {
+    my ($self) = @_;
 
-    print "INFO: Max retry: [$retry]\n" if $DEBUG;
-    while ($retry > 0)
-    {
-        my $proxy = $self->set_proxy();
-        if (defined($proxy) && ($proxy =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,6}/))
-        {
-            $self->proxy(['http','ftp'], $proxy);
-            my $response = $self->SUPER::request(@_);
-            print {*STDOUT} "INFO: Status " . $response->status_line . "\n" if $DEBUG;
-            return $response if (defined($response) && $response->is_success);
-        }    
-        $retry--;
+    my $clone   = $self->clone();
+    my $retry   = $DEFAULT_RETRY_COUNT;
+    my @proxies = _fetch_proxies();
+
+    if (scalar(@proxies)) {
+        print "INFO: Max retry: [$retry]\n" if $DEBUG;
+        while ($retry > 0 && scalar(@proxies) > 0) {
+            my $proxy = shift @proxies;
+            if (defined($proxy) && ($proxy =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,6}/)) {
+                $self->proxy(['http','ftp'], $proxy);
+                my $response = $self->SUPER::request(@_);
+                print {*STDOUT} "INFO: Status " . $response->status_line . "\n" if $DEBUG;
+                return $response if (defined($response) && $response->is_success);
+            }
+            $retry--;
+        }
     }
 
     print {*STDOUT} "WARN: Unable to get the proxy ... going no-proxy route now.\n" if $DEBUG;
     return $clone->SUPER::request(@_);
-}
-
-=head2 get_proxy()
-
-This returns the proxy that was used last time.
-
-    use strict; use warnings;
-    use LWP::UserAgent::Anonymous;
-
-    my $browser  = LWP::UserAgent::Anonymous->new();
-    my $request  = HTTP::Request->new(GET=>'http://www.google.com/');
-    my $response = $browser->anon_request($request);
-    print "Proxy used last time : " . $browser->get_proxy(). "\n";
-
-=cut
-
-sub get_proxy
-{
-    my $self = shift;
-    return $self->{_proxy} 
-        if (exists($self->{_proxy}) && defined($self->{_proxy}));
-    return 'N/A';    
-}
-
-=head2 is_it_ok()
-
-This takes in a proxy and validates it by telneting it. Returns 1 on success and 0 on failure.
-This is being called by method set_proxy(). 
-Expects the proxy in the format of ddd.ddd.ddd.ddd:ddddd.
-
-    use strict; use warnings;
-    use LWP::UserAgent::Anonymous;
-
-    my $browser = LWP::UserAgent::Anonymous->new();
-    print "Valid proxy.\n" if $browser->is_it_ok('70.186.168.130:9090');
-
-=cut
-
-sub is_it_ok
-{
-    my $self  = shift;
-    my $proxy = shift;
-
-    return 0 unless defined($proxy);
-
-    return 0 if (exists($self->{_buggy}) && exists($self->{_buggy}->{$proxy}));
-
-    $proxy =~ /(.*)\:(.*)/;
-    print {*STDOUT} "INFO: Telneting host [$1] on port [$2] ... " if $DEBUG;
-
-    my $telnet = Net::Telnet->new();
-    eval { $telnet->open(Host => $1, Port => $2); };
-    if ($@)
-    {
-        $self->{_buggy}->{$proxy} = 1;
-        print {*STDOUT} "[FAIL]\n" if $DEBUG;
-        return 0;
-    }
-    my $error = $telnet->errmsg;
-    if (defined($error) && ($error ne ''))
-    {
-        $self->{_buggy}->{$proxy} = 1;
-        print {*STDOUT} "[FAIL]\n" if $DEBUG;
-        return 0;
-    }
-    print {*STDOUT} "[OK]\n" if $DEBUG;
-    return 1;
-}
-
-=head2 set_debug()
-
-Turn debug on or off by passing 1 or 0 respectively.
-
-    use strict; use warnings;
-    use LWP::UserAgent::Anonymous;
-
-    my $browser = LWP::UserAgent::Anonymous->new();
-    $browser->set_debug(1);
-
-=cut
-
-sub set_debug
-{
-    my $self = shift;
-    $DEBUG = shift;
 }
 
 =head2 set_retry()
@@ -184,56 +92,46 @@ Set retry count when fetching proxies. By default the count is 3.
 
 =cut
 
-sub set_retry
-{
-    my $self = shift;
-    $DEFAULT_RETRY_COUNT = shift;
+sub set_retry {
+    my ($self, $count) = @_;
+
+    $DEFAULT_RETRY_COUNT = $count;
 }
 
-=head2 set_proxy()
+sub set_debug {
+    my ($self, $value) = @_;
 
-This loads up the default list of proxies and shuffles it before picking up one from the list.
-This  is  being called by method anon_request(). This *SHOULD* not be called directly, instead 
-let method anon_request() handle the call for you.
+    $DEBUG = $value;
+}
 
-    use strict; use warnings;
-    use LWP::UserAgent::Anonymous;
-
-    my $browser = LWP::UserAgent::Anonymous->new();
-    $browser->set_proxy();
-
-=cut
-
-sub set_proxy
-{
-    my $self = shift;
-
-    my ($proxy, @list);
-    @list  = shuffle(@{$LWP::UserAgent::Anonymous::Proxy::DEFAULT});
-    $proxy = shift(@list);
-
-    if (defined $proxy)
-    {
-        return unless ($self->is_it_ok($proxy));
-
-        print {*STDOUT} "INFO: Using proxy [$proxy] ...\n" if $DEBUG;
-        $self->{_proxy} = sprintf("http://%s/", $proxy);
-
-        return $self->{_proxy};
+sub _fetch_proxy {
+    my $proxy = [];
+    my $file  = get($PROXY_SERVER);
+    for my $record (split /\n/,$file) {
+        $record =~ s/^\s+//g;
+        if ($record =~ /^gp\./i) {
+            $record =~ m/\"proxy\_ip\"\:\"(.*?)\".*\"proxy\_port\"\:\"(\d+)\"/i;
+            push @$proxy, sprintf("%s:%d", $1, $2);
+        }
     }
-    print {*STDOUT} "WARN: No proxy could be found.\n" if $DEBUG;
+
+    return shuffle(@$proxy);
 }
 
 =head1 AUTHOR
 
 Mohammad S Anwar, C<< <mohammad.anwar at yahoo.com> >>
 
+=head1 REPOSITORY
+
+L<https://github.com/Manwar/LWP-UserAgent-Anonymous>
+
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-lwp-useragent-anonymous at rt.cpan.org>,or
- through the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LWP-UserAgent-Anonymous>.
-I will be notified and then you'll automatically be notified of progress on your bug as I make 
-changes.
+Please report  any  bugs  or feature requests to C<bug-lwp-useragent-anonymous at
+rt.cpan.org>, or through the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=LWP-UserAgent-Anonymous>.
+I will be notified and then you'll automatically be notified of progress  on your
+bug as I make changes.
 
 =head1 SUPPORT
 
@@ -265,18 +163,41 @@ L<http://search.cpan.org/dist/LWP-UserAgent-Anonymous/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Mohammad S Anwar.
+Copyright (C) 2011 - 2014 Mohammad S Anwar.
 
-This  program  is  free  software; you can redistribute it and/or modify it under the terms of
-either:  the  GNU  General Public License as published by the Free Software Foundation; or the 
-Artistic License.
+This  program  is  free software; you can redistribute it and/or modify it under
+the  terms  of the the Artistic License (2.0). You may obtain a copy of the full
+license at:
 
-See http://dev.perl.org/licenses/ for more information.
+L<http://www.perlfoundation.org/artistic_license_2_0>
 
-=head1 DISCLAIMER
+Any  use,  modification, and distribution of the Standard or Modified Versions is
+governed by this Artistic License.By using, modifying or distributing the Package,
+you accept this license. Do not use, modify, or distribute the Package, if you do
+not accept this license.
 
-This  program  is  distributed  in  the hope that it will be useful, but WITHOUT ANY WARRANTY;
-without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+If your Modified Version has been derived from a Modified Version made by someone
+other than you,you are nevertheless required to ensure that your Modified Version
+ complies with the requirements of this license.
+
+This  license  does  not grant you the right to use any trademark,  service mark,
+tradename, or logo of the Copyright Holder.
+
+This license includes the non-exclusive, worldwide, free-of-charge patent license
+to make,  have made, use,  offer to sell, sell, import and otherwise transfer the
+Package with respect to any patent claims licensable by the Copyright Holder that
+are  necessarily  infringed  by  the  Package. If you institute patent litigation
+(including  a  cross-claim  or  counterclaim) against any party alleging that the
+Package constitutes direct or contributory patent infringement,then this Artistic
+License to you shall terminate on the date that such litigation is filed.
+
+Disclaimer  of  Warranty:  THE  PACKAGE  IS  PROVIDED BY THE COPYRIGHT HOLDER AND
+CONTRIBUTORS  "AS IS'  AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES. THE IMPLIED
+WARRANTIES    OF   MERCHANTABILITY,   FITNESS   FOR   A   PARTICULAR  PURPOSE, OR
+NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY YOUR LOCAL LAW. UNLESS
+REQUIRED BY LAW, NO COPYRIGHT HOLDER OR CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL,  OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE
+OF THE PACKAGE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
