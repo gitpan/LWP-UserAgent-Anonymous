@@ -1,6 +1,6 @@
 package LWP::UserAgent::Anonymous;
 
-$LWP::UserAgent::Anonymous::VERSION = '0.06';
+$LWP::UserAgent::Anonymous::VERSION = '0.07';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ LWP::UserAgent::Anonymous - Interface to anonymous LWP::UserAgent.
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =cut
 
@@ -18,6 +18,7 @@ use 5.006;
 use Clone;
 use LWP::Simple;
 use Data::Dumper;
+use HTTP::Request;
 use List::Util qw/shuffle/;
 use base qw/LWP::UserAgent Clone/;
 
@@ -25,11 +26,6 @@ use base qw/LWP::UserAgent Clone/;
 
 It provides an anonymity to user agent by setting proxy from the pool  of proxies
 fetched from L<here|http://www.gatherproxy.com> runtime.
-
-    use strict; use warnings;
-    use LWP::UserAgent::Anonymous;
-
-    my $browser = LWP::UserAgent::Anonymous->new();
 
 =cut
 
@@ -45,41 +41,41 @@ our $PROXY_SERVER = 'http://www.gatherproxy.com';
 This is simply acts like proxy handler for user agent. It tries to get  hold of a
 valid  proxy  server,  if  it can't then it simply takes the standard route. This
 method  behaves exactly as method  request()  for LWP::UserAgent  plus  sets  the
-proxy for you.
+proxy for you. You may find it takes little longer than usual to respond.
 
     use strict; use warnings;
     use HTTP::Request;
     use LWP::UserAgent::Anonymous;
 
-    my $browser  = LWP::UserAgent::Anonymous->new();
+    my $browser  = LWP::UserAgent::Anonymous->new;
     my $request  = HTTP::Request->new(GET=>'http://www.google.com/');
     my $response = $browser->anon_request($request);
 
 =cut
 
 sub anon_request {
-    my $self = shift;
+    my ($self, $request) = @_;
 
     my $clone   = $self->clone();
     my $retry   = $DEFAULT_RETRY_COUNT;
     my @proxies = _fetch_proxies();
 
     if (scalar(@proxies)) {
-        print "INFO: Max retry: [$retry]\n" if $DEBUG;
+        _print("INFO: Max retry: [$retry]") if $DEBUG;
         while ($retry > 0 && scalar(@proxies) > 0) {
             my $proxy = shift @proxies;
             if (defined($proxy) && ($proxy =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,6}/)) {
                 $self->proxy(['http','ftp'], sprintf("http://%s/", $proxy));
-                my $response = $self->SUPER::request(@_);
-                print {*STDOUT} "INFO: Status " . $response->status_line . "\n" if $DEBUG;
-                return $response if (defined($response) && $response->is_success);
+                if ($self->_is_success($proxy)) {
+                    return $self->SUPER::request($request);
+                }
             }
             $retry--;
         }
     }
 
-    print {*STDOUT} "WARN: Unable to get the proxy ... going no-proxy route now.\n" if $DEBUG;
-    return $clone->SUPER::request(@_);
+    _print('WARN: Unable to get the proxy... going no-proxy route now.') if $DEBUG;
+    return $clone->SUPER::request($request);
 }
 
 =head2 set_retry()
@@ -89,7 +85,7 @@ Set retry count when fetching proxies. By default the count is 3.
     use strict; use warnings;
     use LWP::UserAgent::Anonymous;
 
-    my $browser = LWP::UserAgent::Anonymous->new();
+    my $browser = LWP::UserAgent::Anonymous->new;
     $browser->set_retry(2);
 
 =cut
@@ -109,16 +105,54 @@ sub set_debug {
 sub _fetch_proxies {
     my $proxy = [];
     my $file  = get($PROXY_SERVER);
-    for my $record (split /\n/,$file) {
-        $record =~ s/^\s+//g;
-        if ($record =~ /^gp\./i) {
-            $record =~ m/\"proxy\_ip\"\:\"(.*?)\".*\"proxy\_port\"\:\"(\d+)\"/i;
-            push @$proxy, sprintf("%s:%d", $1, $2);
+    if (defined $file) {
+        for my $record (split /\n/,$file) {
+            $record =~ s/^\s+//g;
+            if ($record =~ /^gp\./i) {
+                if ($record =~ m/\"proxy\_ip\"\:\"(.*?)\".*\"proxy\_port\"\:\"(\d+)\"/i) {
+                    push @$proxy, sprintf("%s:%d", $1, $2);
+                }
+            }
         }
     }
 
     return shuffle(@$proxy);
 }
+
+sub _is_success {
+    my ($self, $proxy) = @_;
+
+    my $request  = HTTP::Request->new(GET => 'http://www.google.com');
+    my $response = $self->SUPER::request($request);
+
+    return (defined($response) && $response->is_success);
+}
+
+# Untested code (trying timeout while checking proxy)
+sub __is_success {
+    my ($self, $proxy) = @_;
+
+    eval {
+        local $SIG{ALRM} = sub { die "Timeout" };
+        alarm(20);
+
+        my $request  = HTTP::Request->new(GET => 'http://www.google.com');
+        my $response = $self->SUPER::request($request);
+
+        return (defined($response) && $response->is_success);
+
+        alarm(0);
+    };
+
+    return 0 if ($@ =~ /^Timeout/);
+}
+
+sub _print {
+    my ($message) = @_;
+
+    print {*STDOUT} $message, "\n";
+}
+
 
 =head1 AUTHOR
 

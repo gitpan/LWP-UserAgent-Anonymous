@@ -1,5 +1,10 @@
 Revision history for LWP-UserAgent-Anonymous
 
+0.07  Tue Sep 16 00:23:01 2014
+      - Added proxy checking.
+      - Added HTTP::Request as pre-requisite to Makefile.PL file.
+      - Minor cosmetic changes.
+
 0.06  Sun Sep 14 20:43:00 2014
       - Updated invalid method call to _fetch_proxies().
       - Added missing import of LWP::Simple package.
